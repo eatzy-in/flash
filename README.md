@@ -112,3 +112,8 @@ To delete the application, run `4-cleanup.sh`.
 ## account detail:
 email : eatzy.in@gmail.com
 user : eatzy-in
+
+https://stackoverflow.com/questions/49404846/how-to-upload-image-in-amazon-s3-bucket-through-java/49407089
+
+###APIs
+createOutletAPIS
