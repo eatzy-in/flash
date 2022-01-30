@@ -2,17 +2,13 @@ package com.eatzy.flash.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.io.InputStream;
-import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class CreateOutletRequest {
+public class OutletCreateRequest {
     @JsonProperty("id")
     private String id;
 
@@ -21,5 +17,4 @@ public class CreateOutletRequest {
 
     @JsonProperty("address")
     private String address;
-
 }

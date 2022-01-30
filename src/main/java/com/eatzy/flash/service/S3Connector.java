@@ -16,6 +16,8 @@ import javax.inject.Named;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 public class S3Connector {
     AmazonS3 amazonS3;
@@ -75,5 +77,26 @@ public class S3Connector {
         } catch (Exception exception){
             System.out.println("test "+ exception);
         }
+    }
+
+    public List<String> getImageURIList(String bucketName, String prefix){
+        ListObjectsV2Request request = new ListObjectsV2Request().
+                withBucketName(bucketName).
+                withPrefix(prefix);
+        ListObjectsV2Result listObjectsResult;
+        List<String> prefixURLs = new ArrayList<>();
+        do{
+            listObjectsResult = amazonS3.listObjectsV2(request);
+            for (S3ObjectSummary objectSummary : listObjectsResult.getObjectSummaries()) {
+                String imageURI = "https://"+bucketName+".s3.amazonaws.com/"+objectSummary.getKey();
+                prefixURLs.add(imageURI);
+
+                System.out.println("Key: " + objectSummary.getKey());
+            }
+            String token = listObjectsResult.getNextContinuationToken();
+            System.out.println("Next Continuation Token: " + token);
+            request.setContinuationToken(token);
+        } while (listObjectsResult.isTruncated());
+        return prefixURLs;
     }
 }
