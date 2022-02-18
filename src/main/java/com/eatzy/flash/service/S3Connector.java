@@ -51,7 +51,13 @@ public class S3Connector {
             ListObjectsV2Request req = new ListObjectsV2Request().withBucketName(bukcketName).withPrefix("123/gallery/");
             ListObjectsV2Result listObjectsResult;
             do {
-
+                List<Thread> text
+                        = new ArrayList();
+                text.add(new Thread());
+                text.add(new Thread());
+                text.parallelStream().forEach(a-> {
+                    a.start();
+                });
                 listObjectsResult = amazonS3.listObjectsV2(req);
                 int count = 0;
                 for (S3ObjectSummary objectSummary : listObjectsResult.getObjectSummaries()) {
@@ -80,6 +86,7 @@ public class S3Connector {
     }
 
     public List<String> getImageURIList(String bucketName, String prefix){
+        System.out.println("4"+ prefix);
         ListObjectsV2Request request = new ListObjectsV2Request().
                 withBucketName(bucketName).
                 withPrefix(prefix);
@@ -89,9 +96,11 @@ public class S3Connector {
             listObjectsResult = amazonS3.listObjectsV2(request);
             for (S3ObjectSummary objectSummary : listObjectsResult.getObjectSummaries()) {
                 String imageURI = "https://"+bucketName+".s3.amazonaws.com/"+objectSummary.getKey();
-                prefixURLs.add(imageURI);
-
-                System.out.println("Key: " + objectSummary.getKey());
+                System.out.println(imageURI);
+                if(!objectSummary.getKey().equals(prefix)) {
+                    prefixURLs.add(imageURI);
+                    System.out.println("Key: " + objectSummary.getKey());
+                }
             }
             String token = listObjectsResult.getNextContinuationToken();
             System.out.println("Next Continuation Token: " + token);

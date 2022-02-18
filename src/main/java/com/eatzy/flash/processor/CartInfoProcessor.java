@@ -15,16 +15,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.eatzy.flash.model.Constants.S3Constants.*;
 import static com.eatzy.flash.model.Constants.TABLE_NAME_MENU_DETAILS;
 import static com.eatzy.flash.model.Constants.TABLE_NAME_OUTLET_DETAILS;
 
-public class CartInfoProcessor {
-    private static final String S3_BUCKET_NAME_FOR_OUTLETS = "eatzy-outlets";
-    private static final String S3_PREFIX_NAME_FOR_OUTLETS_ICON_TEMPLATE = "%s/icon/";
-    private static final String S3_PREFIX_NAME_FOR_MENU_ITEM_TEMPLATE = "%s/menu_item/%s/";
+public class CartInfoProcessor implements Processor<FetchCartInfoRequest, FetchCartDetailResponse>{
 
     private final DynamoDBConnector dynamoDBConnector;
     private final S3Connector s3Connector;
@@ -49,31 +48,40 @@ public class CartInfoProcessor {
 
         List<String> iconTemplate = s3Connector.getImageURIList(S3_BUCKET_NAME_FOR_OUTLETS,
                 String.format(S3_PREFIX_NAME_FOR_OUTLETS_ICON_TEMPLATE, outletId));
+
+        List<String> galleryURLS = s3Connector.getImageURIList(S3_BUCKET_NAME_FOR_OUTLETS,
+                String.format(S3_PREFIX_NAME_FOR_OUTLETS_GALLERY_TEMPLATE, outletId));
+
         OutletDetails outletDetails = OutletDetails.builder()
                 .outletID(outletId)
                 .outletName(getOutletDetails.getName())
-                .outletImageLogo(iconTemplate.get(1))
-                .address(getOutletDetails.getAddress()).build();
+                .outletImageLogo(iconTemplate.get(0))
+                .address(getOutletDetails.getAddress())
+                .galleryURL(galleryURLS)
+                .build();
         List<CartItemDetails> cartItemDetailsList = new ArrayList<>();
 
-        for(Map.Entry<String, Integer> entry:  fetchCartInfoRequest.getMenuItemToQuantityMap().entrySet()){
-            String menuItemID = entry.getKey();
-           int quantity =  entry.getValue();
-            MenuDDBRecord menuDDBRecord = dynamoDBConnector.getItem(MenuDDBRecord.class,
-                    TABLE_NAME_MENU_DETAILS, MenuDDBRecord.ID, menuItemID);
-            double priceOfOneItem =  Double.parseDouble(menuDDBRecord.getGetMenuPrice());
-            double aggItemAmount = priceOfOneItem * quantity;
-            totalAmount += aggItemAmount;
-            List<String> menuItemImageURL = s3Connector.getImageURIList(S3_BUCKET_NAME_FOR_OUTLETS,
-                    String.format(S3_PREFIX_NAME_FOR_MENU_ITEM_TEMPLATE, outletId, menuItemID));
-            CartItemDetails cartItemDetails = CartItemDetails.builder()
-                    .menuItemId(menuItemID)
-                    .menuIDName(menuDDBRecord.getGetMenuName())
-                    .menuImageURL(menuItemImageURL.get(1))
-                    .price(priceOfOneItem)
-                    .quantity(quantity)
-                    .build();
-            cartItemDetailsList.add(cartItemDetails);
+        for(Map.Entry<String, HashMap<String,Integer>> firstEntry: fetchCartInfoRequest.getServingToItemToQuantityMap().entrySet()) {
+            for (Map.Entry<String, Integer> entry : firstEntry.getValue().entrySet()) {
+                String menuItemID = entry.getKey();
+                int quantity = entry.getValue();
+                MenuDDBRecord menuDDBRecord = dynamoDBConnector.getItem(MenuDDBRecord.class,
+                        TABLE_NAME_MENU_DETAILS, MenuDDBRecord.ID, menuItemID);
+                double priceOfOneItem = Double.parseDouble(menuDDBRecord.getGetMenuPrice());
+                double aggItemAmount = priceOfOneItem * quantity;
+                totalAmount += aggItemAmount;
+                List<String> menuItemImageURL = s3Connector.getImageURIList(S3_BUCKET_NAME_FOR_OUTLETS,
+                        String.format(S3_PREFIX_NAME_FOR_MENU_ITEM_TEMPLATE, outletId, menuItemID));
+                CartItemDetails cartItemDetails = CartItemDetails.builder()
+                        .menuItemId(menuItemID)
+                        .menuIDName(menuDDBRecord.getGetMenuName())
+                        .menuImageURL(menuItemImageURL.get(0))
+                        .price(priceOfOneItem)
+                        .quantity(quantity)
+                        .servingType(Integer.parseInt(firstEntry.getKey()))
+                        .build();
+                cartItemDetailsList.add(cartItemDetails);
+            }
         }
 
         List<BillInfo> billInfos = new ArrayList<>();

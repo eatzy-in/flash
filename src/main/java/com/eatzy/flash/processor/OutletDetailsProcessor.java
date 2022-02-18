@@ -18,13 +18,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import static com.eatzy.flash.model.Constants.S3Constants.*;
 import static com.eatzy.flash.model.Constants.TABLE_NAME_MENU_DETAILS;
 import static com.eatzy.flash.model.Constants.TABLE_NAME_OUTLET_DETAILS;
 
-public class OutletDetailsProcessor {
-    private static final String S3_BUCKET_NAME_FOR_OUTLETS = "eatzy-outlets";
-    private static final String S3_PREFIX_NAME_FOR_OUTLETS_GALLERY_TEMPLATE = "%s/gallery/";
-    private static final String S3_PREFIX_NAME_FOR_MENU_ITEM_TEMPLATE = "%s/menu_item/%s/";
+public class OutletDetailsProcessor implements Processor<GetOutletDetailsRequest, OutletDetailsResponse> {
     private final DynamoDBConnector dynamoDBConnector;
     private final S3Connector s3Connector;
 
@@ -35,8 +33,7 @@ public class OutletDetailsProcessor {
     }
 
     public OutletDetailsResponse process(GetOutletDetailsRequest outletDetailsRequest) {
-        OutletDDBRecord getOutletDetails = dynamoDBConnector.getItem(OutletDDBRecord.class, TABLE_NAME_OUTLET_DETAILS,
-                OutletDDBRecord.OUTLET_ID, outletDetailsRequest.getOutletID());
+        OutletDDBRecord getOutletDetails = dynamoDBConnector.getItem(OutletDDBRecord.class, TABLE_NAME_OUTLET_DETAILS, OutletDDBRecord.OUTLET_ID, outletDetailsRequest.getOutletID());
         String menuID = getOutletDetails.getMenuID();
 
         List<String> galleryURLS = s3Connector.getImageURIList(S3_BUCKET_NAME_FOR_OUTLETS,
@@ -53,7 +50,7 @@ public class OutletDetailsProcessor {
             List<String> menuItemImageURL = s3Connector.getImageURIList(S3_BUCKET_NAME_FOR_OUTLETS,
                     String.format(S3_PREFIX_NAME_FOR_MENU_ITEM_TEMPLATE, outletDetailsRequest.getOutletID(),
                             menuItemID));
-            if (!CollectionUtils.isNullOrEmpty(menuItemImageURL) && menuItemImageURL.size() > 0)
+            if (!CollectionUtils.isNullOrEmpty(menuItemImageURL) && menuItemImageURL.size() > 1)
                 menuDDBRecord.setGetMenuImageUri(menuItemImageURL.get(0));
 
             menuItems.add(convertMenuDDBToMenuItem(menuDDBRecord));

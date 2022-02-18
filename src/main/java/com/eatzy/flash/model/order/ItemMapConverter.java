@@ -2,6 +2,7 @@ package com.eatzy.flash.model.order;
 
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTypeConverted;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTypeConverter;
+import com.eatzy.flash.response.order.OrderedMenuItem;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -14,10 +15,10 @@ import java.io.IOException;
 import java.util.List;
 
 @DynamoDBTypeConverted(converter = ItemMapConverter.class)
-public class ItemMapConverter implements DynamoDBTypeConverter<String, List<ItemMap>> {
+public class ItemMapConverter implements DynamoDBTypeConverter<String, List<OrderedMenuItem>> {
     public ItemMapConverter(){}
 
-    @Override public String convert(List<ItemMap> itemMaps) {
+    @Override public String convert(List<OrderedMenuItem> itemMaps) {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
             return objectMapper.writeValueAsString(itemMaps);
@@ -27,17 +28,20 @@ public class ItemMapConverter implements DynamoDBTypeConverter<String, List<Item
         return null;
     }
 
-    @Override public List<ItemMap> unconvert(String s) {
+    @Override public List<OrderedMenuItem> unconvert(String s) {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
-            return objectMapper.readValue(s, new TypeReference<List<ItemMap>>() {
+            return objectMapper.readValue(s, new TypeReference<List<OrderedMenuItem>>() {
             });
         } catch (JsonParseException e) {
+            System.out.println(e);
             //do something
         } catch (JsonMappingException e) {
+            System.out.println(e);
             //do something
         } catch (IOException e) {
             //do something
+            System.out.println(e);
         }
         return null;
     }

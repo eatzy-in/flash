@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.HashMap;
+import java.util.Map;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -14,8 +15,8 @@ public class FetchCartInfoRequest {
     @JsonProperty("outletID")
     String outletID;
 
-    @JsonProperty("menuItemToQuantityMap")
-    HashMap<String, Integer> menuItemToQuantityMap;
+    @JsonProperty("servingToItemToQuantityMap")
+    Map<String, HashMap<String, Integer>> servingToItemToQuantityMap;
 
     @JsonProperty("userID")
     String userID;

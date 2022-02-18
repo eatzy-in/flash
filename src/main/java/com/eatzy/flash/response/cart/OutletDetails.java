@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -19,4 +21,6 @@ public class OutletDetails {
     String outletImageLogo;
     @JsonProperty("address")
     String address;
+    @JsonProperty("galleryURL")
+    List<String> galleryURL;
 }

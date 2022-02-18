@@ -7,6 +7,7 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTypeConverted;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTypeConvertedJson;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTypeConverter;
+import com.eatzy.flash.response.order.OrderedMenuItem;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -22,13 +23,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.eatzy.flash.model.Constants.TABLE_NAME_ORDER_DETAILS;
+
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@DynamoDBTable(tableName = "ORDER_DETAILS")
+@DynamoDBTable(tableName = TABLE_NAME_ORDER_DETAILS)
 public class OrderDetailsDDBRecord {
 
+    public static final String SECONDARY_INDEX_OUTLET_ID = "outletID-index";
     public static final String ORDER_ID = "orderID";
     public static final String USER_ID = "userID";
     public static final String OUTLET_ID = "outletID";
@@ -55,9 +59,9 @@ public class OrderDetailsDDBRecord {
 
     @DynamoDBAttribute(attributeName = ITEM_LIST)
     @DynamoDBTypeConverted(converter = ItemMapConverter.class)
-    private List<ItemMap> itemMapList;
+    private List<OrderedMenuItem> itemMapList;
 
-    @DynamoDBRangeKey(attributeName = CREATE_ORDER_TIME)
+    @DynamoDBAttribute(attributeName = CREATE_ORDER_TIME)
     private String getCreateOrderTime;
 
     @DynamoDBAttribute(attributeName = UPDATE_ORDER_TIME)

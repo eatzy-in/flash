@@ -2,18 +2,19 @@ package com.eatzy.flash.processor;
 
 import com.eatzy.flash.model.outlet.OutletDDBRecord;
 import com.eatzy.flash.request.OutletCreateRequest;
+import com.eatzy.flash.response.OutletCreateResponse;
 import com.eatzy.flash.service.DynamoDBConnector;
 
 import javax.inject.Inject;
 
-public class OutletProcessor {
+public class OutletProcessor implements Processor<OutletCreateRequest, OutletCreateResponse>{
     private final DynamoDBConnector dynamoDBConnector;
 
     @Inject OutletProcessor(DynamoDBConnector dynamoDBConnector) {
         this.dynamoDBConnector = dynamoDBConnector;
     }
 
-    public void process(OutletCreateRequest outletCreateRequest) {
+    public OutletCreateResponse process(OutletCreateRequest outletCreateRequest) {
         try {
             OutletDDBRecord outletDDBRecord = OutletDDBRecord.builder().outletID(outletCreateRequest.getId())
                     .name(outletCreateRequest.getName())
@@ -22,6 +23,7 @@ public class OutletProcessor {
         } catch (Exception exception) {
             System.out.println("exception while raising : " + exception);
         }
+        return null;
     }
 
 }

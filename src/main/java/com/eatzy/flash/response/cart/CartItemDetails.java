@@ -21,4 +21,6 @@ public class CartItemDetails {
     int quantity;
     @JsonProperty("price")
     double price;
+    @JsonProperty("servingType")
+    int servingType;
 }
